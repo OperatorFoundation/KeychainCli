@@ -3,13 +3,12 @@ import CryptoKit
 import Foundation
 
 
-class Keychain
+public class Keychain
 {
-    func retrieveOrGeneratePrivateKey(label: String, tag: String) -> P256.KeyAgreement.PrivateKey?
+    public func retrieveOrGeneratePrivateKey(label: String) -> P256.KeyAgreement.PrivateKey?
     {
         // Do we already have a key?
-        let searchQuery = generateKeySearchQuery(label: label, tag: tag)
-        if let key = retrievePrivateKey(query: searchQuery)
+        if let key = retrievePrivateKey(label: label)
         {
             return key
         }
@@ -28,7 +27,7 @@ class Keychain
         return privateKey
     }
     
-    func generateAndSavePrivateKey(label: String) -> P256.KeyAgreement.PrivateKey?
+    public func generateAndSavePrivateKey(label: String) -> P256.KeyAgreement.PrivateKey?
     {
         let privateKey = P256.KeyAgreement.PrivateKey()
         
@@ -43,7 +42,7 @@ class Keychain
         return privateKey
     }
     
-    func storePrivateKey(_ key: P256.KeyAgreement.PrivateKey, label: String) -> Bool
+    public func storePrivateKey(_ key: P256.KeyAgreement.PrivateKey, label: String) -> Bool
     {
         let attributes = [kSecAttrKeyType: kSecAttrKeyTypeECSECPrimeRandom,
                           kSecAttrKeyClass: kSecAttrKeyClassPrivate] as [String: Any]
@@ -87,8 +86,10 @@ class Keychain
         }
     }
     
-    func retrievePrivateKey(query: CFDictionary) -> P256.KeyAgreement.PrivateKey?
+    public func retrievePrivateKey(label: String) -> P256.KeyAgreement.PrivateKey?
     {
+        let query: CFDictionary = generateKeySearchQuery(label: label)
+        
         // Find and cast the result as a SecKey instance.
         var item: CFTypeRef?
         var secKey: SecKey
@@ -120,11 +121,11 @@ class Keychain
         }
     }
     
-    func generateKeySearchQuery(label: String, tag: String) -> CFDictionary
+    public func generateKeySearchQuery(label: String) -> CFDictionary
     {
         let query: [String: Any] = [kSecClass as String: kSecClassKey,
                                     kSecAttrApplicationLabel as String: label,
-                                    kSecAttrApplicationTag as String: tag,
+                                    //kSecAttrApplicationTag as String: tag,
                                     kSecMatchLimit as String: kSecMatchLimitOne,
                                     kSecReturnRef as String: true,
                                     kSecReturnAttributes as String: false,
@@ -133,64 +134,20 @@ class Keychain
         return query as CFDictionary
     }
     
-//    func generateKeyAttributesDictionary(tag: String) -> CFDictionary
-//    {
-//        //FIXME: Secure Enclave
-//        // let access = SecAccessControlCreateWithFlags(kCFAllocatorDefault, kSecAttrAccessibleAlwaysThisDeviceOnly, .privateKeyUsage, nil)!
-//        
-//        let privateKeyAttributes: [String: Any] = [
-//            kSecAttrIsPermanent as String: true,
-//            kSecAttrApplicationTag as String: tag
-//            //kSecAttrAccessControl as String: access
-//        ]
-//        
-//        let publicKeyAttributes: [String: Any] = [
-//            kSecAttrIsPermanent as String: true,
-//            kSecAttrApplicationTag as String: tag
-//        ]
-//        
-//        let attributes: [String: Any] = [
-//            kSecClass as String: kSecClassKey,
-//            kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
-//            kSecAttrKeySizeInBits as String: 256,
-//            //kSecAttrTokenID as String: kSecAttrTokenIDSecureEnclave,
-//            kSecPrivateKeyAttrs as String: privateKeyAttributes,
-//            kSecPublicKeyAttrs as String: publicKeyAttributes
-//        ]
-//        
-//        return attributes as CFDictionary
-//    }
-    
-    public func deriveSymmetricKey(receiverPublicKey: P256.KeyAgreement.PublicKey, senderPrivateKey:P256.KeyAgreement.PrivateKey) -> SymmetricKey?
+    public func deleteKey(label: String)
     {
-        do
-        {
-            let sharedSecret = try senderPrivateKey.sharedSecretFromKeyAgreement(with: receiverPublicKey)
-            let symmetricKey = sharedSecret.x963DerivedSymmetricKey(using: SHA256.self, sharedInfo: Data(), outputByteCount: 32)
-            
-            return symmetricKey
-        }
-        catch let sharedSecretError
-        {
-            print("Unable to encrypt payload. Failed to generate a shared secret: \(sharedSecretError)")
-            return nil
-        }
-    }
-    
-    func deleteKeys(tag: String)
-    {
-        print("\nAttempted to delete key from secure enclave.")
+        print("\nAttempted to delete key.")
         //Remove client keys from secure enclave
-        let query: [String: Any] = [kSecClass as String: kSecClassKey,
-                                    kSecAttrApplicationTag as String: tag]
+        //let query: [String: Any] = [kSecClass as String: kSecClassKey, kSecAttrApplicationTag as String: tag]
+        let query = generateKeySearchQuery(label: label)
         let deleteStatus = SecItemDelete(query as CFDictionary)
         
         switch deleteStatus
         {
         case errSecItemNotFound:
-            print("Could not find a client key to delete.\n")
+            print("Could not find a key to delete.\n")
         case noErr:
-            print("Deleted client keys.\n")
+            print("Deleted a key.\n")
         default:
             print("Unexpected status: \(deleteStatus.description)\n")
         }
