@@ -5,6 +5,8 @@ import Foundation
 
 public class Keychain
 {
+    public init() {}
+    
     public func retrieveOrGeneratePrivateKey(label: String) -> P256.KeyAgreement.PrivateKey?
     {
         // Do we already have a key?
