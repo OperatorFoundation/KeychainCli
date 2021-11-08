@@ -2,7 +2,7 @@
 import Crypto
 import Foundation
 
-
+#if os(macOS)
 public class Keychain
 {
     public init() {}
@@ -155,3 +155,8 @@ public class Keychain
         }
     }
 }
+#else
+
+@_exported import KeychainLinux
+
+#endif
