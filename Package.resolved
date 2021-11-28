@@ -2,6 +2,15 @@
   "object": {
     "pins": [
       {
+        "package": "KeychainMacOS",
+        "repositoryURL": "https://github.com/OperatorFoundation/KeychainMacOS.git",
+        "state": {
+          "branch": null,
+          "revision": "e6d545e3b8ebb4b3b6b3f58c6936ab708a8d7373",
+          "version": "1.0.1"
+        }
+      },
+      {
         "package": "swift-crypto",
         "repositoryURL": "https://github.com/apple/swift-crypto.git",
         "state": {
