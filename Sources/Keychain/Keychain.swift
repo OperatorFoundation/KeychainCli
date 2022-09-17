@@ -2,7 +2,7 @@
 import Crypto
 import Foundation
 
-#if os(macOS)
+#if os(macOS) || os(iOS)
 
 @_exported import KeychainMacOS
 
